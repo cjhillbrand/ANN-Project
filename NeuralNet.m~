@@ -66,9 +66,9 @@ classdef NeuralNet
             % Done with simple Error checking, moveing on to creating the
             % cell arrays that contain the dimensions of our weights and
             % biases
-            obj.w = {zeros(dimensions(2), dimensions(1))};
-            obj.b = {zeros(dimensions(2), dimensions(1))};
-            for i = 3:layers
+            obj.w = {zeros(dimensions(i), dimensions(i -1))};
+            obj.b = {zeros(dimensions(};
+            for i = 2:layers
                obj.w = {obj.w, zeros(dimensions(i), dimensions(i -1))};
                obj.b = {obj.b, zeros(dimensions(i), 1)};
             end
