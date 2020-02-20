@@ -66,11 +66,13 @@ classdef NeuralNet
             % Done with simple Error checking, moveing on to creating the
             % cell arrays that contain the dimensions of our weights and
             % biases
-            obj.w = {zeros(dimensions(2), dimensions(1))};
-            obj.b = {zeros(dimensions(2), dimensions(1))};
+            obj.w = {};
+            obj.w{1} = zeros(dimensions(2), dimensions(1));
+            obj.b = {}; 
+            obj.b{1} = zeros(dimensions(1), 1);
             for i = 3:layers
-               obj.w = {obj.w, zeros(dimensions(i), dimensions(i -1))};
-               obj.b = {obj.b, zeros(dimensions(i), 1)};
+               obj.w{i - 1} = zeros(dimensions(i), dimensions(i -1));
+               obj.b{i - 1} = zeros(dimensions(i), 1);
             end
             
             % Store the transformation functions.
@@ -81,8 +83,6 @@ classdef NeuralNet
             
             % Store the number of layers
             obj.layers = layers;
-            obj.w
-            obj.b
         end
         
         % Takes in a set of input vectors that have the same number of
