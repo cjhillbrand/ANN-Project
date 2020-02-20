@@ -5,10 +5,13 @@ classdef NeuralNet
     % algorithms that are used to tweak these paramaters. 
     
     properties (Access=private)
-        w %  The Cell object that holds all of the weight matrices
+        W %  The Cell object that holds all of the weight matrices
           %  for each layer of the neural network.
         b %  The Cell object that stores all of the vectors for each
           %  layer of the neural network.
+        s % For batch learning stores the accumulation of the sesitivity
+             % over a training set.
+        alpha % set the learning rate
         layers % Number of layers in the network.
         transFuncs % A record of all of the transfer functions.
         learning % Type of learning for this network.
@@ -41,7 +44,8 @@ classdef NeuralNet
         % array.
         % The third argument is a string that denotes which type of
         % learning should be applied to the network.
-        function obj = NeuralNet(dimensions, transFuncs, learning)
+        function obj = NeuralNet(dimensions, transFuncs, learning, ...
+                learningRate)
             % Create weight cell matrix, create bias matrix, etc.
             layers = length(dimensions);
             
@@ -66,13 +70,16 @@ classdef NeuralNet
             % Done with simple Error checking, moveing on to creating the
             % cell arrays that contain the dimensions of our weights and
             % biases
-            obj.w = {};
-            obj.w{1} = zeros(dimensions(2), dimensions(1));
+            obj.W = {};
+            obj.W{1} = zeros(dimensions(2), dimensions(1));
             obj.b = {}; 
             obj.b{1} = zeros(dimensions(1), 1);
+            obj.s = {};
+            obj.s{1} = zeros(dimensions(1), 1);
             for i = 3:layers
-               obj.w{i - 1} = zeros(dimensions(i), dimensions(i -1));
+               obj.W{i - 1} = zeros(dimensions(i), dimensions(i -1));
                obj.b{i - 1} = zeros(dimensions(i), 1);
+               obj.s{i - 1} = zeros(dimensions(i), 1);
             end
             
             % Store the transformation functions.
@@ -83,6 +90,10 @@ classdef NeuralNet
             
             % Store the number of layers
             obj.layers = layers;
+            
+            % Set learning rate 
+            obj.alpha = learningRate;
+            
         end
         
         % Takes in a set of input vectors that have the same number of
@@ -92,7 +103,19 @@ classdef NeuralNet
         % same. Trains the network with forward propogation and back
         % propogation. Updates the weights according to the learning type.
         function train(obj, p, t)
-
+            for i = 1:size(p, 2)
+                [n, a] = forwardPropogation(obj, p);
+                sens = computeSensitivity(obj, n, a, t);
+                if (obj.learningType == obj.BATCH)
+                   % increment global sensitivity 
+                end
+                if (obj.learningType == obj.ONLINE) 
+                    updateWeights();
+                end
+            end
+            if (obj.learningType == obj.BATCH) 
+               updateWeights(); 
+            end
         end
         
         % Takes in a set of input vectors that must match the number of
@@ -115,16 +138,37 @@ classdef NeuralNet
         
         % Not sure what these functions need just yet. They do need to
         % store values differently for different types of learning.
-        function result = forwardPropogation()
+        function [nCell, a] = forwardPropogation(obj, p)
+            nCell = {};
+            n = obj.w{1} * p + obj.b{1};
+            nCell{1} = n; 
+            a = evaluateFunc(obj, n, obj.transFuncs(1)); 
+            for m = 2:obj.layers - 1
+               n = obj.w{m} * a + obj.b{m};
+               nCell{m} = n;
+               a = evaluateFunc(obj, n, obj.transFuncs(m));
+            end
             
         end
         
-        function result = backwardPropogation()
-            
+        function sens = computeSensitivity(obj, n, a, t)
+            sens = {};
+            sens = [-2 * (t - a{obj.layers -1}) *...
+                evaluateDeriv(obj, n{obj.layers -1}), sens];
+            for i = obj.layers -1 : -1 : 1
+                sens = [evaluateDeriv(obj, n{obj.layers - 1} *...
+                    obj.W{i + 1}' * sens{1}), sens];
+            end
         end
         
-        function result = updateWeights()
-            
+        function result = updateWeights(obj, n, m)
+            if (m == 0)
+                obj.W{m} = obj.W{m} - obj.alpha * S{m} * p;
+                obj.b{m} = obj.b{m} - obj.alpha * S{m};
+            else
+                obj.W{m} = obj.W{m} - obj.alpha * S{m} * evaluateFunc(n{m-1});
+                obj.b{m} = obj.b{m} - obj.alpha * S{m};
+            end
         end
         
         % Given a value evaluates that value at the type of function
