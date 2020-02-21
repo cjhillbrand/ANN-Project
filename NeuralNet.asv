@@ -76,7 +76,7 @@ classdef NeuralNet
             obj.W = {};
             obj.W{1} = (rand(dimensions(2), dimensions(1)) - 0.5) / 10;
             obj.b = {}; 
-            obj.b{1} = rand(dimensions(2), 1);
+            obj.b{1} = zeros(dimensions(2), 1);
             obj.s = {};
             obj.s{1} = zeros(dimensions(2), 1);
             obj.sa = {};
@@ -84,7 +84,7 @@ classdef NeuralNet
             for i = 3:layers
                obj.W{i - 1} = (rand(dimensions(i), dimensions(i -1)) - 0.5) / 10;
                obj.sa{i - 1} = zeros(dimensions(i), dimensions(i -1));
-               obj.b{i - 1} = rand(dimensions(i), 1);
+               obj.b{i - 1} = zeros(dimensions(i), 1);
                obj.s{i - 1} = zeros(dimensions(i), 1);
             end
             
@@ -171,7 +171,7 @@ classdef NeuralNet
         
         function updateWeights(obj, n, S, p)
 %             fprintf('Sensitivity:');
-            obj.b{1}
+%             obj{1}
             obj.W{1} = obj.W{1} - obj.alpha * S{1} * p;
             obj.b{1} = obj.b{1} - obj.alpha * S{1};
             
