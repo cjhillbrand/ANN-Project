@@ -11,9 +11,12 @@ classdef NeuralNet < handle
           %  layer of the neural network.
         s % For batch learning stores the accumulation of the sesitivity
              % over a training set.
+<<<<<<< HEAD
         sa % For batch learning stores the accumulation of the sensitivity
            % times a' from the previous output. (Refer to updating weights 
            % batch learning equation)
+=======
+>>>>>>> d8d109d1c5553672f14a80f659b479d8b89a50c6
         alpha % set the learning rate
         layers % Number of layers in the network.
         transFuncs % A record of all of the transfer functions.
@@ -74,6 +77,7 @@ classdef NeuralNet < handle
             % cell arrays that contain the dimensions of our weights and
             % biases
             obj.W = {};
+<<<<<<< HEAD
             obj.W{1} = (rand(dimensions(2), dimensions(1)));
             obj.b = {}; 
             obj.b{1} = rand(dimensions(2), 1);
@@ -85,6 +89,16 @@ classdef NeuralNet < handle
                obj.W{i - 1} = (rand(dimensions(i), dimensions(i - 1)));
                obj.sa{i - 1} = zeros(dimensions(i), dimensions(i -1));
                obj.b{i - 1} = rand(dimensions(i), 1);
+=======
+            obj.W{1} = zeros(dimensions(2), dimensions(1));
+            obj.b = {}; 
+            obj.b{1} = zeros(dimensions(1), 1);
+            obj.s = {};
+            obj.s{1} = zeros(dimensions(1), 1);
+            for i = 3:layers
+               obj.W{i - 1} = zeros(dimensions(i), dimensions(i -1));
+               obj.b{i - 1} = zeros(dimensions(i), 1);
+>>>>>>> d8d109d1c5553672f14a80f659b479d8b89a50c6
                obj.s{i - 1} = zeros(dimensions(i), 1);
             end
             
@@ -99,7 +113,11 @@ classdef NeuralNet < handle
             
             % Set learning rate 
             obj.alpha = learningRate;
+<<<<<<< HEAD
                         
+=======
+            
+>>>>>>> d8d109d1c5553672f14a80f659b479d8b89a50c6
         end
         
         % Takes in a set of input vectors that have the same number of
@@ -108,6 +126,7 @@ classdef NeuralNet < handle
         % Also the number of p vectors and number of t vectors must be the
         % same. Trains the network with forward propogation and back
         % propogation. Updates the weights according to the learning type.
+<<<<<<< HEAD
         function MSE = train(obj, p, t)
             Q = size(p, 2);
             
@@ -130,6 +149,22 @@ classdef NeuralNet < handle
                updateWeightsBatch(obj, Q); 
             end
             MSE = MSE / Q;
+=======
+        function train(obj, p, t)
+            for i = 1:size(p, 2)
+                [n, a] = forwardPropogation(obj, p);
+                sens = computeSensitivity(obj, n, a, t);
+                if (obj.learningType == obj.BATCH)
+                   % increment global sensitivity 
+                end
+                if (obj.learningType == obj.ONLINE) 
+                    updateWeights();
+                end
+            end
+            if (obj.learningType == obj.BATCH) 
+               updateWeights(); 
+            end
+>>>>>>> d8d109d1c5553672f14a80f659b479d8b89a50c6
         end
         
         % Takes in a set of input vectors that must match the number of
@@ -152,6 +187,7 @@ classdef NeuralNet < handle
         % store values differently for different types of learning.
         function [nCell, a] = forwardPropogation(obj, p)
             nCell = {};
+<<<<<<< HEAD
             n = obj.W{1} * p + obj.b{1};
             nCell{1} = n; 
             a = evaluateFunc(obj, n, obj.transFuncs(1)); 
@@ -160,10 +196,22 @@ classdef NeuralNet < handle
                nCell{m} = n;
                a = evaluateFunc(obj, n, obj.transFuncs(m));
             end
+=======
+            n = obj.w{1} * p + obj.b{1};
+            nCell{1} = n; 
+            a = evaluateFunc(obj, n, obj.transFuncs(1)); 
+            for m = 2:obj.layers - 1
+               n = obj.w{m} * a + obj.b{m};
+               nCell{m} = n;
+               a = evaluateFunc(obj, n, obj.transFuncs(m));
+            end
+            
+>>>>>>> d8d109d1c5553672f14a80f659b479d8b89a50c6
         end
         
         function sens = computeSensitivity(obj, n, a, t)
             sens = {};
+<<<<<<< HEAD
             jacob = evaluateJacob(obj, n{obj.layers - 1}, obj.transFuncs(obj.layers - 1));
             sens{1} = -2 * jacob * (t - a);
             for i = obj.layers - 2 : -1 : 1
@@ -188,6 +236,23 @@ classdef NeuralNet < handle
             for i = 1:obj.layers - 1
                obj.W{i} = obj.W{i} - obj.alpha / Q * obj.sa{i}; 
                obj.b{i} = obj.b{i} - obj.alpha / Q * obj.s{i};
+=======
+            sens = [-2 * (t - a{obj.layers -1}) *...
+                evaluateDeriv(obj, n{obj.layers -1}), sens];
+            for i = obj.layers -1 : -1 : 1
+                sens = [evaluateDeriv(obj, n{obj.layers - 1} *...
+                    obj.W{i + 1}' * sens{1}), sens];
+            end
+        end
+        
+        function result = updateWeights(obj, n, m)
+            if (m == 0)
+                obj.W{m} = obj.W{m} - obj.alpha * S{m} * p;
+                obj.b{m} = obj.b{m} - obj.alpha * S{m};
+            else
+                obj.W{m} = obj.W{m} - obj.alpha * S{m} * evaluateFunc(n{m-1});
+                obj.b{m} = obj.b{m} - obj.alpha * S{m};
+>>>>>>> d8d109d1c5553672f14a80f659b479d8b89a50c6
             end
         end
         
