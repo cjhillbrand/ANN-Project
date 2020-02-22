@@ -1,4 +1,4 @@
-classdef NeuralNet
+classdef NeuralNet < handle
     % NeuralNet class is a container for all of the hyper
     % paramaters that a user would want to tweak in a neural net
     % and not worry about the underlying weights, biases, and 
@@ -27,8 +27,8 @@ classdef NeuralNet
         % For every transfer function we need to code a private function
         % for its actual value and its derivation.
         
-        SIG = 0; PURELIN = 1; 
-        TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 1;
+        SIG = 0; PURELIN = 1; LOGSIG = 2;
+        TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 2;
         % These are the three learning types that are supported.
         ONLINE = 10; BATCH = 11; MIN_BATCH = 12;
         LEARNING_LOW_BOUND = 10; LEARNING_HIGH_BOUND = 12;
@@ -74,7 +74,7 @@ classdef NeuralNet
             % cell arrays that contain the dimensions of our weights and
             % biases
             obj.W = {};
-            obj.W{1} = (rand(dimensions(2), dimensions(1)) - 0.5) / 10;
+            obj.W{1} = (rand(dimensions(2), dimensions(1)));
             obj.b = {}; 
             obj.b{1} = rand(dimensions(2), 1);
             obj.s = {};
@@ -82,7 +82,7 @@ classdef NeuralNet
             obj.sa = {};
             obj.sa{1} = zeros(dimensions(2), dimensions(1));
             for i = 3:layers
-               obj.W{i - 1} = (rand(dimensions(i), dimensions(i -1)) - 0.5) / 10;
+               obj.W{i - 1} = (rand(dimensions(i), dimensions(i - 1)));
                obj.sa{i - 1} = zeros(dimensions(i), dimensions(i -1));
                obj.b{i - 1} = rand(dimensions(i), 1);
                obj.s{i - 1} = zeros(dimensions(i), 1);
@@ -99,7 +99,7 @@ classdef NeuralNet
             
             % Set learning rate 
             obj.alpha = learningRate;
-            
+                        
         end
         
         % Takes in a set of input vectors that have the same number of
@@ -108,11 +108,14 @@ classdef NeuralNet
         % Also the number of p vectors and number of t vectors must be the
         % same. Trains the network with forward propogation and back
         % propogation. Updates the weights according to the learning type.
-        function train(obj, p, t)
+        function MSE = train(obj, p, t)
             Q = size(p, 2);
+            
+            MSE = 0;
             for i = 1:Q
                 [n, a] = forwardPropogation(obj, p(:, i));
                 sens = computeSensitivity(obj, n, a, t(:, i));
+                MSE = MSE + (t(:, i) - a)' * (t(:, i) - a);
                 if (obj.learning == obj.BATCH)
                    for j = length(obj.s)
                        obj.s{j} = obj.s{j} + sens{j};
@@ -120,12 +123,13 @@ classdef NeuralNet
                    end
                 end
                 if (obj.learning == obj.ONLINE) 
-                    updateWeights(obj, n, sens, p(i));
+                    updateWeights(obj, n, sens, p(:, i));
                 end
             end
             if (obj.learning == obj.BATCH) 
                updateWeightsBatch(obj, Q); 
             end
+            MSE = MSE / Q;
         end
         
         % Takes in a set of input vectors that must match the number of
@@ -152,17 +156,16 @@ classdef NeuralNet
             nCell{1} = n; 
             a = evaluateFunc(obj, n, obj.transFuncs(1)); 
             for m = 2: obj.layers - 1
-                n = obj.W{m} * a + obj.b{m};
+               n = obj.W{m} * a + obj.b{m};
                nCell{m} = n;
                a = evaluateFunc(obj, n, obj.transFuncs(m));
             end
-            
         end
         
         function sens = computeSensitivity(obj, n, a, t)
             sens = {};
-            sens{1} = -2 * (t - a) *...
-                evaluateJacob(obj, n{obj.layers -1}, obj.transFuncs(obj.layers - 1));
+            jacob = evaluateJacob(obj, n{obj.layers - 1}, obj.transFuncs(obj.layers - 1));
+            sens{1} = -2 * jacob * (t - a);
             for i = obj.layers - 2 : -1 : 1
                 deriv = evaluateJacob(obj, n{i}, obj.transFuncs(i));
                 sens = [deriv * obj.W{i + 1}' * sens{1}, sens];
@@ -171,12 +174,12 @@ classdef NeuralNet
         
         function updateWeights(obj, n, S, p)
 %             fprintf('Sensitivity:');
-            obj.b{1}
-            obj.W{1} = obj.W{1} - obj.alpha * S{1} * p;
+%             obj.b{1}
+            obj.W{1} = obj.W{1} - obj.alpha * S{1} * p';
             obj.b{1} = obj.b{1} - obj.alpha * S{1};
             
             for i = 2 : obj.layers - 1
-                obj.W{i} = obj.W{i} - obj.alpha * S{i} * evaluateFunc(obj, n{i-1}, obj.transFuncs(i));
+                obj.W{i} = obj.W{i} - obj.alpha * S{i} * evaluateFunc(obj, n{i-1}, obj.transFuncs(i))';
                 obj.b{i} = obj.b{i} - obj.alpha * S{i};
             end
         end
@@ -198,8 +201,10 @@ classdef NeuralNet
                 if (type == obj.SIG)
                     result(i) = 1 / (1 + exp(-value(i)));
                 end
+                if (type == obj.LOGSIG)
+                   result(i) = log(1 / (1 + exp(-value(i)))); 
+                end
             end
-            
         end
         
         % Given a value, evaluates that value at the derivative of the
@@ -213,10 +218,12 @@ classdef NeuralNet
                     y_x = evaluateFunc(obj, value(i), type);
                     result(i) = (1 - y_x) * y_x;
                 end
+                if (type == obj.LOGSIG)
+                    result(i) = 1 / (exp(value(i)) + 1);
+                end
             end
             result = diag(result); 
         end    
-        
     end
 end
 
