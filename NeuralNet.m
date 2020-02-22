@@ -18,6 +18,7 @@ classdef NeuralNet < handle
         layers % Number of layers in the network.
         transFuncs % A record of all of the transfer functions.
         learning % Type of learning for this network.
+        batchSize % BatchSize for mini batches
     end
     
 
@@ -30,7 +31,7 @@ classdef NeuralNet < handle
         SIG = 0; PURELIN = 1; LOGSIG = 2;
         TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 2;
         % These are the three learning types that are supported.
-        ONLINE = 10; BATCH = 11; MIN_BATCH = 12;
+        ONLINE = 10; BATCH = 11; MINIBATCH = 12;
         LEARNING_LOW_BOUND = 10; LEARNING_HIGH_BOUND = 12;
         
         
@@ -48,7 +49,7 @@ classdef NeuralNet < handle
         % The third argument is a string that denotes which type of
         % learning should be applied to the network.
         function obj = NeuralNet(dimensions, transFuncs, learning, ...
-                learningRate)
+                learningRate, batchSize)
             % Create weight cell matrix, create bias matrix, etc.
             layers = length(dimensions);
             
@@ -68,6 +69,10 @@ classdef NeuralNet < handle
             if (learning < NeuralNet.LEARNING_LOW_BOUND ||...
                     learning > NeuralNet.LEARNING_HIGH_BOUND)
                 error('ERROR: Must pass in legal Learning Type')
+            end
+            
+            if (~exist('batchSize', 'var') && obj.learning == obj.MINIBATCH)
+               error('MUST ENTER BATCH SIZE FOR MINI BATCH'); 
             end
             
             % Done with simple Error checking, moveing on to creating the
@@ -99,6 +104,13 @@ classdef NeuralNet < handle
             
             % Set learning rate 
             obj.alpha = learningRate;
+            
+            % Set mini batchsize if neccessary
+            if exist('batchSize', 'var')
+               obj.batchSize = batchSize; 
+            end
+            
+
                         
         end
         
@@ -116,14 +128,19 @@ classdef NeuralNet < handle
                 [n, a] = forwardPropogation(obj, p(:, i));
                 sens = computeSensitivity(obj, n, a, t(:, i));
                 MSE = MSE + (t(:, i) - a)' * (t(:, i) - a);
-                if (obj.learning == obj.BATCH)
-                   for j = length(obj.s)
+                if (obj.learning == obj.BATCH || obj.learning == obj.MINIBATCH)
+                    obj.s{1} = obj.s{1} + sens{1};
+                    obj.sa{1} = obj.sa{1} + sens{1} * evaluateFunc(obj, p(:, i), obj.transFuncs(1))';
+                   for j = 2:length(obj.s)
                        obj.s{j} = obj.s{j} + sens{j};
-                       obj.sa{j} = obj.sa{j} + sens{j} * evaluateFunc(obj, n{j}, obj.transFuncs(j))'; 
+                       obj.sa{j} = obj.sa{j} + sens{j} * evaluateFunc(obj, n{j - 1}, obj.transFuncs(j))'; 
                    end
                 end
                 if (obj.learning == obj.ONLINE) 
                     updateWeights(obj, n, sens, p(:, i));
+                end
+                if(obj.learning == obj.MINIBATCH && mod(i, obj.batchSize) == 0)
+                    updateWeightsBatch(obj, obj.batchSize);
                 end
             end
             if (obj.learning == obj.BATCH) 
@@ -188,6 +205,10 @@ classdef NeuralNet < handle
             for i = 1:obj.layers - 1
                obj.W{i} = obj.W{i} - obj.alpha / Q * obj.sa{i}; 
                obj.b{i} = obj.b{i} - obj.alpha / Q * obj.s{i};
+            end
+            for i = 1:length(obj.s)
+               obj.s{i} = zeros(size(obj.s{i}));
+               obj.sa{i} = zeros(size(obj.sa{i}));
             end
         end
         

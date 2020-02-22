@@ -4,7 +4,7 @@
 % function obj = NeuralNet(dimensions, transFuncs, learning, learningRate)
 hidden = [2 3 4 5 6 7 8 9 10];
 functions = [NeuralNet.SIG NeuralNet.SIG];
-type = NeuralNet.ONLINE;
+type = NeuralNet.BATCH;
 a = 0.1;
 ZERO = [0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0]';
 ONE = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]';
