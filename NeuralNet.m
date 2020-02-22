@@ -71,10 +71,13 @@ classdef NeuralNet < handle
                 error('ERROR: Must pass in legal Learning Type')
             end
             
-            if (~exist('batchSize', 'var') && obj.learning == obj.MINIBATCH)
-               error('MUST ENTER BATCH SIZE FOR MINI BATCH'); 
-            end
+            if ~exist('batchSize', 'var')
+                if (obj.learning == obj.MINIBATCH)
+                    error('MUST ENTER BATCH SIZE FOR MINI BATCH'); 
             
+                end
+            end
+                
             % Done with simple Error checking, moveing on to creating the
             % cell arrays that contain the dimensions of our weights and
             % biases

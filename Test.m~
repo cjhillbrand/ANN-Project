@@ -30,8 +30,10 @@ y = zeros(1, EPOCHS);
 
 for i = 1:EPOCHS
     MSE = nn.train(p, t);
-    %y(i) = MSE;
+    y(i) = MSE;
     a = nn.test(p);
+    a = setMax(a);
+    incorrect = sum(a == -1);
 end
 
 figure;
