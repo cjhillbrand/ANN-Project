@@ -4,15 +4,26 @@ learning = NeuralNet.MINIBATCH;
 alpha = 0.5;
 batchSize = length(labels) / 1000;
 nn = NeuralNet(dims, functions, learning, alpha, batchSize);
-MSE = 10;
-i = 0;
 
-while MSE > 0.01
+EPOCHS = 10;
+
+
+x = 1:EPOCHS;
+y = zeros(1, EPOCHS);
+for i = 1:EPOCHS
    MSE = nn.train(images, labels);
-    %if (mod(i, 10) == 0)
-    fprintf('ERROR %d\n', MSE);
-    %end
+   y(i) = MSE;
+   fprintf('MSE: %d \n', MSE);
 end
 
 predicted = nn.test(testImages);
-MSE = (testLabels - predicted)' * (testLabels - predicted) / length(testLabels)
+MSE = (testLabels - predicted)' * (testLabels - predicted) / length(testLabels);
+
+figure;
+xlim([0, EPOCHS]);
+ylim([0 2])
+plot(x, y);
+title('Mean Squared Error over Epochs');
+xlabel('EPOCHS');
+ylabel('Mean Squared Error');
+%saveas(gcf, 'MSEMINIBATCH.png');

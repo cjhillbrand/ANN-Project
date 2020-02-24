@@ -41,6 +41,16 @@ for i = 1:EPOCHS
     
     a = nn.test(p);
 end
+
+figure;
+xlim([0, EPOCHS]);
+ylim([0 100])
+plot(x, y);
+title('Mean Squared Error Over Epochs');
+xlabel('EPOCHS');
+ylabel('Mean Squared Error');
+saveas(gcf, 'MSETest.png');
+
 % results = results * 100 / 30; % Make into percent correct
 % figure;
 % xlim([0 EPOCHS]);

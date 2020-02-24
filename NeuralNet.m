@@ -193,8 +193,6 @@ classdef NeuralNet < handle
         end
         
         function updateWeights(obj, n, S, p)
-%             fprintf('Sensitivity:');
-%             obj.b{1}
             obj.W{1} = obj.W{1} - obj.alpha * S{1} * p';
             obj.b{1} = obj.b{1} - obj.alpha * S{1};
             
