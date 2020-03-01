@@ -11,20 +11,17 @@ This is the backbone of the backpropogation network. The NeuralNet.m is designed
 
 * Predict: The predict method takes in a set of input vectors and returns a set of target values. The target values are what were computed from forward propogation.
 
-* InitWeights: Given a weight object fills sets the weights to of the network to the object passed. 
+## Future Design/Optimizations.
+1. Include and research more transfer functions. Add these trasnfer functions and there derivatives to the NeuralNet.m class.
+2. Create a function that takes in a set of hyperparamaters and tries all combinations of hyper paramaters. (Make sure to implement with a `parfor` loop. How should we measure this? MSE? Expand into different performance metrics down the line.
+3. Given an image and a kernel such that the `kernel_rows <= Image_rows && kernel_cols <= Image_cols` applies a convolution to the image. (This is used for smoothing, gradients, derivatives, and second derivatives of images)
+4. Create a scripting file to run multiple networks in parallel (This compliments the above point)\
+5. Include more preprocessing on the image (away from convolution)
+6. Transfer private fields in NeuralNet.m to use GPU arrays, also need to change input vectors (internally to GPU arrays)
+7. Variable learning rates: Momentum, re-evaluate each epoch.
+8. Stop short (prevent overfit)
+#### Seperation of Work
 
-### Private Methods:
-* Forward Propogation: Given an input value runs that value through the netwrok saving values such as the error, sensitivity, and actual value outputed. Returns the actual value returned from the network.
-
-* Backward Propogation: Using the fields updated by the forward propogation adjusts the weights and biases of the network. This method once done updating zeros out any of the accumulated sums of errors, sensitivity, and stored actual values.
-
-_Have to figure out other Private methods we need. Maybe a computeSensitivity? Computer MSE? Not sure... what we decide to do here will affect what we will store in our private fields._
-
-_Look into cell array this can store matrices of unequal sizes_
-
-### Private Fields:
-* Weights: A 3 dimensional object that stores the weight matrix for each layer. 
-
-* Biases: A matrix that stores the biases of the network.
-
-_Depending on what info we need at each iteration for the batch learning we will store them in these private fields. Need to discuss with Ryan more in depth in what we actuall need_
+| Ryan      | CJ      |
+|-----------|---------|
+| 2,5,6,7,8 | 1,2,3,5 |
