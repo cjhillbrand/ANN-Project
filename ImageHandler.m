@@ -32,9 +32,9 @@ classdef ImageHandler
                 error('Must pass in pre-defined kernel');
             end
             if (size(image) < 3)
-                error('Image must be larger than kernl');
+                error('Image must be larger than kernel');
             end
-            result = conv2(image, kernel);
+            result = conv2(image, kernel, 'same');
             if exist('iteration', 'var')
                 for i = 1:iteration
                     result = conv2(result, kernel, 'same');
