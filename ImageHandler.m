@@ -17,7 +17,7 @@ classdef ImageHandler
         SECOND_GRADIENT_KERNEL_X_Y = [1 0 -1; 0 0 0; -1 0 1]; 
         
         % Apply to produce a smoothed image using a gaussian blur
-        SMOOTHING_KERNEL = [1 2 1; 2 4 2; 1 2 1];       
+        SMOOTHING_KERNEL = [1/16 2/16 1/16; 2/16 4/16 2/16; 1/16 2/16 1/16];       
     end
     
     methods(Static)
