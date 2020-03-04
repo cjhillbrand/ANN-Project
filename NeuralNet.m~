@@ -251,13 +251,11 @@ classdef NeuralNet < handle
                 end
                 result = diag(result);
             else 
-               discrete = evaluateFunc(obj, value, obj.SOFTMAX);
+               discrete = evaluateFunc()
                for i = 1:length(values)
-                    for j = 1:length(values)
+                   for j = 1:length(values)
                        if (i == j)
-                            result(i, j) = discrete(i) * (1 - discrete(i));
-                       else
-                           result(i, j) = -discrete(i) * discrete(j);
+                            
                        end
                    end
                end
