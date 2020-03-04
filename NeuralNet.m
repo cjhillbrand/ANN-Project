@@ -28,8 +28,8 @@ classdef NeuralNet < handle
         % For every transfer function we need to code a private function
         % for its actual value and its derivation.
         
-        SIG = 0; PURELIN = 1; LOGSIG = 2; SOFTMAX = 3;
-        TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 3;
+        SIG = 0; PURELIN = 1; LOGSIG = 2; SOFTMAX = 3; RELU = 4;
+        TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 4;
         % These are the three learning types that are supported.
         ONLINE = 10; BATCH = 11; MINIBATCH = 12;
         LEARNING_LOW_BOUND = 10; LEARNING_HIGH_BOUND = 12;
@@ -226,6 +226,9 @@ classdef NeuralNet < handle
                 if (type == obj.LOGSIG)
                    result(i) = log(1 / (1 + exp(-value(i)))); 
                 end
+                if (type == obj.RELU)
+                   result(i) = max([value(i) 0]); 
+                end
             end
             if (type == obj.SOFTMAX)
                result = exp(value - max(value));
@@ -247,6 +250,13 @@ classdef NeuralNet < handle
                     end
                     if (type == obj.LOGSIG)
                         result(i) = 1 / (exp(value(i)) + 1);
+                    end
+                    if (type == obj.RELU)
+                       if (value(i) > 0)
+                           result(i) = 1;
+                       else
+                           result(i) = 0;
+                       end
                     end
                 end
                 result = diag(result);
