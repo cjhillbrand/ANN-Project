@@ -29,7 +29,7 @@ classdef NeuralNet < handle
         % for its actual value and its derivation.
         
         SIG = 0; PURELIN = 1; LOGSIG = 2; SOFTMAX = 3;
-        TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 2;
+        TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 3;
         % These are the three learning types that are supported.
         ONLINE = 10; BATCH = 11; MINIBATCH = 12;
         LEARNING_LOW_BOUND = 10; LEARNING_HIGH_BOUND = 12;
