@@ -22,7 +22,7 @@ nn = NeuralNet(dim, functions, learning, learningrate, batchSize);
 
 EPOCHS = 10;
 for i = 1:EPOCHS
-   MSE = nn.train(inputTrain(1:batchSize,:)', targetTrain(1:batchSize,:)');
+   MSE = nn.train(inputTrain', targetTrain');
    fprintf('MSE at EPOCH: %d is: %d\n', i, MSE);
 end
 
