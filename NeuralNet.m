@@ -50,6 +50,7 @@ classdef NeuralNet < handle
         % learning should be applied to the network.
         function obj = NeuralNet(dimensions, transFuncs, learning, ...
                 learningRate, batchSize)
+            
             % Create weight cell matrix, create bias matrix, etc.
             layers = length(dimensions);
             
@@ -82,7 +83,7 @@ classdef NeuralNet < handle
             % cell arrays that contain the dimensions of our weights and
             % biases
             obj.W = {};
-            obj.W{1} = (rand(dimensions(2), dimensions(1)));
+            obj.W{1} = rand(dimensions(2), dimensions(1));
             obj.b = {}; 
             obj.b{1} = rand(dimensions(2), 1);
             obj.s = {};
@@ -90,7 +91,7 @@ classdef NeuralNet < handle
             obj.sa = {};
             obj.sa{1} = zeros(dimensions(2), dimensions(1));
             for i = 3:layers
-               obj.W{i - 1} = (rand(dimensions(i), dimensions(i - 1)));
+               obj.W{i - 1} = rand(dimensions(i), dimensions(i - 1));
                obj.sa{i - 1} = zeros(dimensions(i), dimensions(i -1));
                obj.b{i - 1} = rand(dimensions(i), 1);
                obj.s{i - 1} = zeros(dimensions(i), 1);
@@ -183,12 +184,16 @@ classdef NeuralNet < handle
         end
         
         function sens = computeSensitivity(obj, n, a, t)
-            sens = {};
+            % Build Sens before hand.
+            sens{1} = zeros(length(obj.b{1}), 1);
+            for i = 2:length(obj.b)
+                sens{i} = zeros(length(obj.b{i}));
+            end
             jacob = evaluateJacob(obj, n{obj.layers - 1}, obj.transFuncs(obj.layers - 1));
-            sens{1} = -2 * jacob * (t - a);
+            sens{length(sens)} = -2 * jacob * (t - a);
             for i = obj.layers - 2 : -1 : 1
                 deriv = evaluateJacob(obj, n{i}, obj.transFuncs(i));
-                sens = [deriv * obj.W{i + 1}' * sens{1}, sens];
+                sens{i} = deriv * obj.W{i + 1}' * sens{i + 1};
             end
         end
         
@@ -262,8 +267,9 @@ classdef NeuralNet < handle
                 result = diag(result);
             else 
                discrete = evaluateFunc(obj, value, obj.SOFTMAX);
-               for i = 1:length(value)
-                    for j = 1:length(value)
+               l = length(value);
+               for i = 1:l
+                    for j = 1:l
                        if (i == j)
                             result(i, j) = discrete(i) * (1 - discrete(i));
                        else

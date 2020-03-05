@@ -1,5 +1,5 @@
-function [trainInput, trainTarget, testInput, testTarget] = SplitTrainTest(inputs, targets)
-    [~, n] = size(A);
+function [trainInput, testInput, trainTarget, testTarget] = SplitTrainTest(inputs, targets)
+    [~, n] = size(inputs);
     P = 0.7;
     idx = randperm(n);
     
