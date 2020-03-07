@@ -5,17 +5,18 @@ OUTPUT_LAYER = 10;
 
 LAST_FUNCTION = NeuralNet.SOFTMAX;
 
-dims = {[INPUT_LAYER 250 OUTPUT_LAYER];
-    [INPUT_LAYER 250 OUTPUT_LAYER];
-    [INPUT_LAYER 200 OUTPUT_LAYER];
-    [INPUT_LAYER 200 OUTPUT_LAYER]};
+dims = {[INPUT_LAYER 225 OUTPUT_LAYER]};
+        %[INPUT_LAYER 220 OUTPUT_LAYER]};
+        %[INPUT_LAYER 230 OUTPUT_LAYER];
+    %[INPUT_LAYER 275 OUTPUT_LAYER]};
 
-functions = {[NeuralNet.SIG LAST_FUNCTION];
-    [NeuralNet.LOGSIG LAST_FUNCTION];
-    [NeuralNet.SIG LAST_FUNCTION];
-    [NeuralNet.LOGSIG LAST_FUNCTION]};
+functions = {[NeuralNet.SIG LAST_FUNCTION]};
+    %[NeuralNet.SIG LAST_FUNCTION];
+    %[NeuralNet.SIG LAST_FUNCTION];
+    %[NeuralNet.SIG LAST_FUNCTION]};
 
-alphas = [0.7 0.75 0.8];
+alphas = [0.19 0.2 0.21];
 
 [bestAccuracy, accuracies, bestNet] = GridSearch(dims, functions, alphas, inputTrain,...
-    targetTrain, inputTest, targetTest);
+    targetTrain, inputTest, targetTest, 200);
+

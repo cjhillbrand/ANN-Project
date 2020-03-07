@@ -14,11 +14,12 @@ classdef NeuralNet < handle
         sa % For batch learning stores the accumulation of the sensitivity
            % times a' from the previous output. (Refer to updating weights 
            % batch learning equation)
-        alpha % set the learning rate
-        layers % Number of layers in the network.
-        transFuncs % A record of all of the transfer functions.
-        learning % Type of learning for this network.
-        batchSize % BatchSize for mini batches
+        alpha       % set the learning rate
+        layers      % Number of layers in the network.
+        transFuncs  % A record of all of the transfer functions.
+        learning    % Type of learning for this network.
+        batchSize   % BatchSize for mini batches
+        prevMse     % The previous MSE for learning rate adjustment
     end
     
 
@@ -29,12 +30,15 @@ classdef NeuralNet < handle
         % for its actual value and its derivation.
         
         SIG = 0; PURELIN = 1; LOGSIG = 2; SOFTMAX = 3; RELU = 4;
-        TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 4;
         % These are the three learning types that are supported.
         ONLINE = 10; BATCH = 11; MINIBATCH = 12;
+    end
+    
+    properties (Constant, Access=private)
+        TRANS_FUNC_LOW_BOUND = 0; TRANS_FUNC_HIGH_BOUND = 4;
         LEARNING_LOW_BOUND = 10; LEARNING_HIGH_BOUND = 12;
-        
-        
+        MSE_RANGE = 0.01;
+        LEARNING_ACCELERATION = 0.05;
     end
     
     %  Public Methods
@@ -50,6 +54,11 @@ classdef NeuralNet < handle
         % learning should be applied to the network.
         function obj = NeuralNet(dimensions, transFuncs, learning, ...
                 learningRate, batchSize)
+            
+            if nargin == 1
+                obj = readNetFromFile(obj, dimensions);
+                return;
+            end
             
             % Create weight cell matrix, create bias matrix, etc.
             layers = length(dimensions);
@@ -114,10 +123,11 @@ classdef NeuralNet < handle
                obj.batchSize = batchSize; 
             end
             
-
+        
                         
         end
         
+
         % Takes in a set of input vectors that have the same number of
         % elements as the first layer of the network. Takes in a set of t
         % vectors that match the number of elements of the output layer.
@@ -126,7 +136,6 @@ classdef NeuralNet < handle
         % propogation. Updates the weights according to the learning type.
         function MSE = train(obj, p, t)
             Q = size(p, 2);
-            
             MSE = 0;
             for i = 1:Q
                 [n, a] = forwardPropogation(obj, p(:, i));
@@ -151,6 +160,12 @@ classdef NeuralNet < handle
                updateWeightsBatch(obj, Q); 
             end
             MSE = MSE / Q;
+%             if (obj.prevMse - obj.MSE_RANGE <= MSE)
+%                 obj.alpha = min(obj.alpha + obj.LEARNING_ACCELERATION, 0.9);
+%             else
+%                obj.alpha = max(obj.alpha - obj.LEARNING_ACCELERATION, 0.2); 
+%             end
+%             obj.prevMse = MSE;
         end
         
         % Takes in a set of input vectors that must match the number of
@@ -165,7 +180,74 @@ classdef NeuralNet < handle
             end
         end
         
+        % Creates a Deep Copy of a NeuralNet object
+        function result = copy(obj)
+            dims = zeros(1, obj.layers);
+            for i = 1:length(dims)
+               dims(i) = length(obj.b); 
+            end 
+            result = NeuralNet(dims, obj.transFuncs, obj.learning, ...
+               obj.alpha, obj.batchSize);
+            for i = 1:obj.layers - 1
+               result.W{i} = obj.W{i};
+               result.b{i} = obj.b{i};
+            end
+        end
+        
+        function result = getWeights(obj)
+            result = obj.W;
+        end
+        
+        function result = getBiases(obj)
+           result = obj.b; 
+        end
+        
+        function result = getAlpha(obj)
+           result = obj.alpha;
+        end
+        
+        function writeNetToFile(obj, file)
+            fid = fopen(file, 'w');
+            fprintf(fid, '%d\n', obj.layers);
+            for i = 1:length(obj.W)
+                fprintf(fid, '%d\n %f\n', size(obj.W{i}), obj.W{i});
+                fprintf(fid, '%d\n %f\n', length(obj.b{i}), obj.b{i});
+            end
+            fprintf(fid, '%d\n %d\n', length(obj.transFuncs), obj.transFuncs);
+            fprintf(fid, '%d\n', obj.learning);
+            fprintf(fid, '%d\n', obj.alpha);
+            fclose(fid);
+        end
+        
+        function obj = readNetFromFile(obj, file)
+           fid = fopen(file, 'r');
+           obj.layers = str2double(fgetl(fid));
+           for i = 1:(obj.layers - 1)
+                rows = str2double(fgetl(fid));
+                col = str2double(fgetl(fid));
+                w = zeros(rows, col);
+                for j = 1:col
+                    for k = 1:rows
+                        w(k, j) = str2double(fgetl(fid));
+                    end
+                end
+                obj.W{i} = w;
+                size(w)
+                rows = str2double(fgetl(fid));
+                bt = zeros(rows, 1);
+                for j = 1:rows
+                   bt(i) = str2double(fgetl(fid)); 
+                end
+                obj.b{i} = bt;
+           end
+           funcNum = str2double(fgetl(fid));
+           obj.transFuncs = fscanf(fid, '%d', [funcNum 1]);
+           obj.learning = str2double(fgetl(fid));
+           obj.alpha = str2double(fgetl(fid));
+           fclose(fid);
+        end
     end
+    
     
     methods (Access=private)
         
