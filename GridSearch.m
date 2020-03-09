@@ -1,5 +1,5 @@
 function [bestAccuracy, accuracies, bestNet] = GridSearch(dims,...
-    functions, alphas, inputs, targets, testInputs, testTargets, epochs)
+    functions, alphas, inputs, targets, epochs)
     nn = {};
     % Try different dims 
     for i = 1:length(dims)
@@ -15,9 +15,11 @@ function [bestAccuracy, accuracies, bestNet] = GridSearch(dims,...
     while (epoch < epochs)
         epoch = epoch + 1;
         for i = 1:length(nn)
-            nn{i}.train(inputs, targets);
-            a = nn{i}.test(testInputs);
-            accuracyTemp = sum(sum(setMax(a) .* testTargets)) / length(a);
+            [inputTrain, inputTest, targetTrain, targetTest] = SplitTrainTest(inputs, targets, 0.6);
+            nn{i}.train(inputTrain, targetTrain);
+            half = length(inputTest) / 2;
+            a = nn{i}.test(inputTest(:, 1:half));
+            accuracyTemp = sum(sum(setMax(a) .* targetTest(:, 1:half))) / length(a);
             fprintf('EPOCH: %d NN: %d Accuracy: %f\n', epoch, i, accuracyTemp);
             accuracies(i) = accuracyTemp;
             if (accuracyTemp > bestAccuracy)

@@ -5,46 +5,24 @@ input = input(:, 3:end);
 target = OneHotEncoder(target)';
 input = reshape(input, [60000, 28, 28]);
 inputSmooth2 = input;
+inputNoSmooth = input;
 
 parfor i = 1:length(input)
     input(i) = ImageHandler.applyKernel(input(i), ImageHandler.SMOOTHING_KERNEL);
     input(i) = ImageHandler.applyKernel(input(i), ImageHandler.SECOND_GRADIENT_KERNEL_X_Y);
-end
-
-parfor i = 1:length(input)
     inputSmooth2(i) = ImageHandler.applyKernel(inputSmooth2(i), ImageHandler.SMOOTHING_KERNEL, 2);
     inputSmooth2(i) = ImageHandler.applyKernel(inputSmooth2(i), ImageHandler.SECOND_GRADIENT_KERNEL_X_Y);
+    inputNoSmooth(i) = ImageHandler.applyKernel(inputNoSmooth(i), ImageHandler.SECOND_GRADIENT_KERNEL_X_Y);
 end
-% Get rid of border pixels since they dont offer a lot of info.
-%input = input(:, 4:25, 4:25);
-input = reshape(input, [60000, 784])';
-inputSmooth2 = reshape(inputSmooth2, [60000, 784])';
-input = [input inputSmooth2];
-target = [target target];
-input = zscore(input, 1, 'all');
-[inputTrain, inputTest, targetTrain, targetTest] = SplitTrainTest(input, target);
 
-%% One set of HyperParamaters
-% dim = [784 128 10];
-% functions = [NeuralNet.SIG NeuralNet.SOFTMAX];
-% learning = NeuralNet.ONLINE;
-% learningrate = 0.4;
-% batchSize = length(inputTrain) / 2000;
-% 
-% nn = NeuralNet(dim, functions, learning, learningrate, batchSize);
-% 
-% EPOCHS = 10;
-% for i = 1:EPOCHS
-%    MSE = nn.train(inputTrain, targetTrain);
-%    fprintf('MSE at EPOCH: %d is: %d\n', i, MSE);
-% end
-% 
-% results = nn.test(inputTest);
-% sum = 0;
-% results = setMax(results);
-% for i = 1:length(results)
-%    if (results(:, i) == targetTest(:, i))
-%       sum = sum + 1; 
-%    end
-% end
-% accuracy = sum / length(results); 
+% Get rid of border pixels since they dont offer a lot of info.
+input = input(:, 4:25, 4:25);
+inputSmooth2 = inputSmooth2(:, 4:25, 4:25);
+inputNoSmooth = inputNoSmooth(:, 4:25, 4:25);
+
+input = reshape(input, [60000, 484])';
+inputSmooth2 = reshape(inputSmooth2, [60000, 484])';
+inputNoSmooth = reshape(inputNoSmooth, [60000, 484])';
+input = [input inputSmooth2 inputNoSmooth];
+target = [target target target];
+input = zscore(input, 1, 'all');

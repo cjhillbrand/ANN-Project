@@ -291,8 +291,8 @@ classdef NeuralNet < handle
         
         function updateWeightsBatch(obj, Q)
             for i = 1:obj.layers - 1
-               obj.W{i} = obj.W{i} - obj.alpha / Q * obj.sa{i}; 
-               obj.b{i} = obj.b{i} - obj.alpha / Q * obj.s{i};
+               obj.W{i} = obj.W{i} - (obj.alpha / Q) * obj.sa{i}; 
+               obj.b{i} = obj.b{i} - (obj.alpha / Q) * obj.s{i};
             end
             for i = 1:length(obj.s)
                obj.s{i} = zeros(size(obj.s{i}));

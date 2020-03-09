@@ -1,6 +1,6 @@
-function [trainInput, testInput, trainTarget, testTarget] = SplitTrainTest(inputs, targets)
+function [trainInput, testInput, trainTarget, testTarget] = SplitTrainTest(inputs, targets, ratio)
     [~, n] = size(inputs);
-    P = 0.7;
+    P = ratio;
     idx = randperm(n);
     
     trainInput = inputs(:, idx(1:round(P*n)));
