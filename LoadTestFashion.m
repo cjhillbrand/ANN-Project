@@ -13,10 +13,11 @@ parfor i = 1:length(input)
 %     inputNoSmooth(i) = ImageHandler.applyKernel(inputNoSmooth(i), ImageHandler.SECOND_GRADIENT_KERNEL_X_Y);
 end
 input = input(:, 3:27, 3:27);
+inputSmooth2 = inputSmooth2(:, 3:27, 3:27);
 
 input = reshape(input, [10000, 625])';
-% inputSmooth2 = reshape(inputSmooth2, [10000, 784])';
+inputSmooth2 = reshape(inputSmooth2, [10000, 625])';
 % inputNoSmooth = reshape(inputNoSmooth, [10000, 784])';
-% input = [input inputSmooth2 inputNoSmooth];
+input = [input inputSmooth2];
 
 inputSub = normalize(input);
